@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated + fetched source data (regenerate with `npm run data:all`)
+/data/raw/
+/data/generated/

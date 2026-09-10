@@ -1,0 +1,21 @@
+import puppeteer from "puppeteer"
+const OUT = "/private/tmp/claude-501/-Users-harsimrangill-Documents-CAC/26d856df-de9a-4799-b8a4-ba0f34abc47c/scratchpad"
+const b = await puppeteer.launch({ headless: true, args: ["--no-sandbox"] })
+const p = await b.newPage()
+await p.setCacheEnabled(false)
+await p.setViewport({ width: 1600, height: 1000 })
+await p.goto("http://localhost:3000/", { waitUntil: "domcontentloaded" })
+await p.waitForSelector("canvas")
+for (let i = 0; i < 120; i++) { await p.mouse.wheel({ deltaY: 260 }); await new Promise(r => setTimeout(r, 12)) }
+await new Promise(r => setTimeout(r, 1500))
+await p.evaluate(() => window.scrollBy(0, 7200))
+await new Promise(r => setTimeout(r, 2200))
+await p.screenshot({ path: `${OUT}/r1-method.png` })
+await p.evaluate(() => window.scrollBy(0, 1500))
+await new Promise(r => setTimeout(r, 2000))
+await p.screenshot({ path: `${OUT}/r2-features.png` })
+await p.goto("http://localhost:3000/does-not-exist", { waitUntil: "domcontentloaded" })
+await new Promise(r => setTimeout(r, 800))
+await p.screenshot({ path: `${OUT}/r3-404.png` })
+console.log("shots written")
+await b.close()

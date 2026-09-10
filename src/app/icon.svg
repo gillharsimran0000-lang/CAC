@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- The Geist Pixel Grid motif carried into the mark: a lattice with a route
+       running through it. Squares rather than strokes so it survives 16px. -->
+  <rect width="32" height="32" rx="7" fill="#06070a"/>
+  <g fill="#2a3140">
+    <rect x="4" y="4" width="5" height="5"/><rect x="12" y="4" width="5" height="5"/>
+    <rect x="20" y="4" width="5" height="5"/><rect x="4" y="12" width="5" height="5"/>
+    <rect x="20" y="12" width="5" height="5"/><rect x="4" y="20" width="5" height="5"/>
+    <rect x="12" y="20" width="5" height="5"/>
+  </g>
+  <g fill="#6ea8fe">
+    <rect x="12" y="12" width="5" height="5"/>
+    <rect x="20" y="20" width="5" height="5"/>
+  </g>
+  <rect x="26" y="4" width="2" height="24" fill="#c96f4a"/>
+</svg>

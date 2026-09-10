@@ -1,0 +1,33 @@
+{
+  "areaId": "little-rock",
+  "sampleCount": 121,
+  "deterrenceS": 1208,
+  "calibratedMeanTripMin": 21.8,
+  "axes": {
+    "transportation": {
+      "min": 1313.3022273003812,
+      "max": 1631.2931886231956,
+      "higherIsBetter": false
+    },
+    "emergencyAccess": {
+      "min": 0.6414033521231365,
+      "max": 0.7411848236077213,
+      "higherIsBetter": true
+    },
+    "infrastructureCapacity": {
+      "min": 0.1760644068827758,
+      "max": 0.19761831811589756,
+      "higherIsBetter": true
+    },
+    "growthEfficiency": {
+      "min": 38.62007679028494,
+      "max": 152.94868109735677,
+      "higherIsBetter": true
+    },
+    "infrastructureBurden": {
+      "min": 20148.19813392062,
+      "max": 79241.03471835096,
+      "higherIsBetter": false
+    }
+  }
+}

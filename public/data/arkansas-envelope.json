@@ -1,0 +1,33 @@
+{
+  "areaId": "arkansas",
+  "sampleCount": 121,
+  "deterrenceS": 243,
+  "calibratedMeanTripMin": 44.7,
+  "axes": {
+    "transportation": {
+      "min": 2636.1120859904754,
+      "max": 2801.8762069565255,
+      "higherIsBetter": false
+    },
+    "emergencyAccess": {
+      "min": 0.5818601997373025,
+      "max": 0.5855511823080776,
+      "higherIsBetter": true
+    },
+    "infrastructureCapacity": {
+      "min": 0.1888660754949848,
+      "max": 0.1991531296732884,
+      "higherIsBetter": true
+    },
+    "growthEfficiency": {
+      "min": 32.212427183888174,
+      "max": 232.42143374522882,
+      "higherIsBetter": true
+    },
+    "infrastructureBurden": {
+      "min": 12464.51041483884,
+      "max": 102107.04769059153,
+      "higherIsBetter": false
+    }
+  }
+}

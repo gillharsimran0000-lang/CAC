@@ -1,0 +1,215 @@
+{
+  "generatedAt": "2026-09-03T23:21:28.681Z",
+  "areas": [
+    {
+      "areaId": "arkansas",
+      "label": "Arkansas",
+      "kind": "state",
+      "zoneKind": "county",
+      "generatedAt": "2026-09-03T03:54:13.195Z",
+      "counts": {
+        "nodes": 25126,
+        "edges": 30148,
+        "routableEdges": 30148,
+        "corridors": 1199,
+        "reportableCorridors": 769
+      },
+      "totals": {
+        "zones": 75,
+        "population": 3011524,
+        "facilities": 1731
+      },
+      "graphProvenance": {
+        "geometry": {
+          "source": "OpenStreetMap via Overpass API",
+          "license": "ODbL",
+          "level": "verified"
+        },
+        "lanes": {
+          "verifiedEdges": 17263,
+          "modelledEdges": 12885,
+          "defaultBasis": "class defaults, Highway Capacity Manual derated"
+        },
+        "speed": {
+          "verifiedEdges": 9305,
+          "modelledEdges": 20843,
+          "defaultBasis": "class defaults"
+        },
+        "capacity": {
+          "level": "modelled",
+          "basis": "lanes x per-lane capacity (HCM derated)"
+        }
+      },
+      "zoneProvenance": {
+        "population": {
+          "level": "verified",
+          "source": "US Census Bureau, 2020 Decennial Census (TIGERweb Census2020, POP100)",
+          "note": "full enumeration, not a survey estimate",
+          "checkedAgainst": 3011524
+        },
+        "housingUnits": {
+          "level": "verified",
+          "source": "US Census Bureau, 2020 Decennial Census (HU100)"
+        },
+        "geometry": {
+          "level": "verified",
+          "source": "US Census Bureau TIGERweb",
+          "note": "generalised for display; ~22 m for block groups, ~110 m for counties"
+        },
+        "facilities": {
+          "level": "verified",
+          "source": "OpenStreetMap via Overpass API",
+          "license": "ODbL",
+          "note": "community-mapped; completeness varies by county"
+        },
+        "snapping": {
+          "level": "modelled",
+          "basis": "nearest graph node to the Census interior point"
+        }
+      },
+      "deterrenceS": 243,
+      "calibratedMeanTripMin": 44.7,
+      "sampleCount": 121
+    },
+    {
+      "areaId": "nwa",
+      "label": "Northwest Arkansas",
+      "kind": "metro",
+      "zoneKind": "blockgroup",
+      "generatedAt": "2026-09-03T03:54:13.755Z",
+      "counts": {
+        "nodes": 32101,
+        "edges": 41403,
+        "routableEdges": 10975,
+        "corridors": 11819,
+        "reportableCorridors": 138
+      },
+      "totals": {
+        "zones": 262,
+        "population": 471162,
+        "facilities": 96
+      },
+      "graphProvenance": {
+        "geometry": {
+          "source": "OpenStreetMap via Overpass API",
+          "license": "ODbL",
+          "level": "verified"
+        },
+        "lanes": {
+          "verifiedEdges": 7411,
+          "modelledEdges": 33992,
+          "defaultBasis": "class defaults, Highway Capacity Manual derated"
+        },
+        "speed": {
+          "verifiedEdges": 13439,
+          "modelledEdges": 27964,
+          "defaultBasis": "class defaults"
+        },
+        "capacity": {
+          "level": "modelled",
+          "basis": "lanes x per-lane capacity (HCM derated)"
+        }
+      },
+      "zoneProvenance": {
+        "population": {
+          "level": "verified",
+          "source": "US Census Bureau, 2020 Decennial Census (TIGERweb Census2020, POP100)",
+          "note": "full enumeration, not a survey estimate",
+          "checkedAgainst": 3011524
+        },
+        "housingUnits": {
+          "level": "verified",
+          "source": "US Census Bureau, 2020 Decennial Census (HU100)"
+        },
+        "geometry": {
+          "level": "verified",
+          "source": "US Census Bureau TIGERweb",
+          "note": "generalised for display; ~22 m for block groups, ~110 m for counties"
+        },
+        "facilities": {
+          "level": "verified",
+          "source": "OpenStreetMap via Overpass API",
+          "license": "ODbL",
+          "note": "community-mapped; completeness varies by county"
+        },
+        "snapping": {
+          "level": "modelled",
+          "basis": "nearest graph node to the Census interior point"
+        }
+      },
+      "deterrenceS": 692,
+      "calibratedMeanTripMin": 22,
+      "sampleCount": 121
+    },
+    {
+      "areaId": "little-rock",
+      "label": "Little Rock",
+      "kind": "metro",
+      "zoneKind": "blockgroup",
+      "generatedAt": "2026-09-03T03:54:14.189Z",
+      "counts": {
+        "nodes": 29340,
+        "edges": 38301,
+        "routableEdges": 12394,
+        "corridors": 8216,
+        "reportableCorridors": 100
+      },
+      "totals": {
+        "zones": 304,
+        "population": 438861,
+        "facilities": 106
+      },
+      "graphProvenance": {
+        "geometry": {
+          "source": "OpenStreetMap via Overpass API",
+          "license": "ODbL",
+          "level": "verified"
+        },
+        "lanes": {
+          "verifiedEdges": 5141,
+          "modelledEdges": 33160,
+          "defaultBasis": "class defaults, Highway Capacity Manual derated"
+        },
+        "speed": {
+          "verifiedEdges": 2489,
+          "modelledEdges": 35812,
+          "defaultBasis": "class defaults"
+        },
+        "capacity": {
+          "level": "modelled",
+          "basis": "lanes x per-lane capacity (HCM derated)"
+        }
+      },
+      "zoneProvenance": {
+        "population": {
+          "level": "verified",
+          "source": "US Census Bureau, 2020 Decennial Census (TIGERweb Census2020, POP100)",
+          "note": "full enumeration, not a survey estimate",
+          "checkedAgainst": 3011524
+        },
+        "housingUnits": {
+          "level": "verified",
+          "source": "US Census Bureau, 2020 Decennial Census (HU100)"
+        },
+        "geometry": {
+          "level": "verified",
+          "source": "US Census Bureau TIGERweb",
+          "note": "generalised for display; ~22 m for block groups, ~110 m for counties"
+        },
+        "facilities": {
+          "level": "verified",
+          "source": "OpenStreetMap via Overpass API",
+          "license": "ODbL",
+          "note": "community-mapped; completeness varies by county"
+        },
+        "snapping": {
+          "level": "modelled",
+          "basis": "nearest graph node to the Census interior point"
+        }
+      },
+      "deterrenceS": 1208,
+      "calibratedMeanTripMin": 21.8,
+      "sampleCount": 121
+    }
+  ]
+}

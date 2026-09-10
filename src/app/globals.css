@@ -1,26 +1,432 @@
 @import "tailwindcss";
 
+/**
+ * CivicFlow's visual system.
+ *
+ * Three typefaces, each with one job. Geist Pixel Grid is a display face built
+ * on a visible lattice -- it reads as drafting paper, which is the right note
+ * for a planning tool -- but it is genuinely hard to read below about 18px, so
+ * it is confined to headlines, step labels and the big result numerals. Geist
+ * Sans carries every piece of running text and UI chrome. Geist Mono carries
+ * figures inside tables and inspectors, where digits need to line up.
+ *
+ * The palette is a dark instrument panel with one accent per meaning. Colour is
+ * never decorative here: green through amber to red is always volume-to-capacity
+ * or response time, and the provenance colours never appear on anything else.
+ */
+
+@theme {
+    --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+    --font-pixel: var(--font-geist-pixel-grid), var(--font-geist-mono), monospace;
+
+    /* Ground. Near-black but not black, so elevated surfaces can sit above it. */
+    --color-ink-950: #06070a;
+    --color-ink-900: #0a0c11;
+    --color-ink-850: #0e1117;
+    --color-ink-800: #131720;
+    --color-ink-700: #1c212c;
+    --color-ink-600: #2a3140;
+    --color-ink-500: #3d4657;
+
+    --color-paper-100: #eef1f6;
+    --color-paper-200: #c9d0dc;
+    --color-paper-300: #98a2b3;
+    --color-paper-400: #6b7688;
+
+    /* Stress ramp: free-flowing through saturated. Also the map's road colour. */
+    --color-flow-free: #3ddc97;
+    --color-flow-easy: #8ed081;
+    --color-flow-warm: #f2c14e;
+    --color-flow-tight: #f28f3b;
+    --color-flow-over: #e5484d;
+
+    /* Provenance. Reserved -- these three appear on nothing else. */
+    --color-verified: #3ddc97;
+    --color-modelled: #6ea8fe;
+    --color-demo: #c084fc;
+
+    /* Chrome accent. Was #6ea8fe at 98% saturation, which competed with the
+       reserved v/c ramp for attention and sat right on top of the MODELLED
+       provenance blue. Pulled back to ~70% so the saturated colours on screen
+       are the ones that carry meaning. */
+    --color-accent: #7aa5e6;
+
+    /**
+     * Identity colours.
+     *
+     * Added for the state gallery, and deliberately kept OUT of the two
+     * reserved systems above: the flow ramp always means volume-to-capacity and
+     * the provenance trio always means where a number came from, so neither can
+     * be borrowed for chrome without making a colour ambiguous. These carry no
+     * measurement. They tint region cards, section rules and the gallery's
+     * pinned panel, and nothing reads a value off them.
+     *
+     * Warm against the cold instrument palette on purpose -- clay and wheat are
+     * the colours of the place being modelled, and they keep a page about
+     * Arkansas from looking like a monitoring dashboard.
+     */
+    --color-clay-500: #c96f4a;
+    --color-clay-400: #dd8a63;
+    --color-wheat-500: #d9b26a;
+    --color-wheat-400: #e8c88c;
+    --color-pine-600: #2f6f5e;
+    --color-pine-500: #3f9079;
+    --color-slate-blue: #4a5f8a;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    background: var(--color-ink-950);
+    color: var(--color-paper-100);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+/**
+ * Display type.
+ *
+ * The references get most of their look from one thing: very large, very light
+ * grotesk with tight negative tracking. Geist Pixel Grid cannot do that -- it is
+ * a lattice face that reads as a terminal readout and turns to mush above about
+ * 60px -- so the big type is Geist Sans at 200-300 weight, and Pixel steps back
+ * to the wordmark and small labels where its character is an asset rather than a
+ * legibility problem.
+ *
+ * Tracking tightens as size grows, which is how large type is actually set:
+ * default spacing that looks right at 16px looks loose and amateur at 120px.
+ */
+.font-display {
+    font-family: var(--font-sans);
+    font-weight: 200;
+    letter-spacing: -0.035em;
+    line-height: 0.94;
+}
+
+.font-display-md {
+    font-family: var(--font-sans);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+}
+
+/* Pixel Grid sets on a lattice, so it needs air to stay legible. */
+.font-pixel {
+    font-family: var(--font-pixel);
+    letter-spacing: 0.04em;
+}
+
+/**
+ * Tabular figures everywhere a number can change in place. Without this, a
+ * score ticking 84 -> 79 visibly reflows, which reads as instability in a tool
+ * whose whole claim is that its numbers are stable and derived.
+ */
+.tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+}
+
+/**
+ * Fixed grain.
+ *
+ * Perfectly flat fields are the tell of a generated interface -- real surfaces
+ * have noise. Generated by feTurbulence rather than shipped as an image, so it
+ * costs nothing and scales to any viewport. Very low opacity: it should be felt
+ * rather than seen, and it must never fight the network lines.
+ */
+.civic-grain {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.032;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/**
+ * One focus ring for everything interactive.
+ *
+ * The lab had none at all: a keyboard user could tab through the entire control
+ * panel with no idea where they were. Defined once here rather than per
+ * component so nothing can be added later without it.
+ */
+:where(a, button, select, input, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+
+/**
+ * Press feedback.
+ *
+ * A control that does not move under the finger reads as an image of a control.
+ * One pixel of travel is enough to register as physical; anything more, on a
+ * dense panel like the lab's, reads as the layout wobbling.
+ */
+:where(button, [role="button"]):not(:disabled):active {
+    transform: translateY(1px);
+}
+
+:where(button, [role="button"]) {
+    transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Paragraph rag, without hand-tuning every string. */
+p {
+    text-wrap: pretty;
+}
+
+h1,
+h2,
+h3 {
+    text-wrap: balance;
+}
+
+::selection {
+    background: var(--color-accent);
+    color: var(--color-ink-950);
+}
+
+/* Thin, unobtrusive scrollbars; the data is the thing on screen. */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink-600) transparent;
+}
+
+/**
+ * A version arriving on the timeline.
+ *
+ * Runs once, on mount, so only the newly appended row animates -- the rows
+ * above it are history and should sit still. Short and small: this is a
+ * confirmation that the experiment was recorded, not an event in its own right.
+ */
+/**
+ * Skeleton shimmer.
+ *
+ * A sweep rather than a pulse: pulsing blocks read as "broken", a sweep reads
+ * as "arriving". Slow enough not to draw the eye away from whatever loads first.
+ */
+@keyframes civic-shimmer {
+    from {
+        background-position: -180% 0;
+    }
+    to {
+        background-position: 180% 0;
+    }
+}
+
+.skeleton {
+    background-image: linear-gradient(
+        90deg,
+        var(--color-ink-800) 0%,
+        var(--color-ink-700) 45%,
+        var(--color-ink-800) 90%
+    );
+    background-size: 220% 100%;
+    animation: civic-shimmer 1.6s linear infinite;
+    border-radius: 4px;
+}
+
+@keyframes civic-row-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-row-in {
+    animation: civic-row-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+/**
+ * Priority sliders.
+ *
+ * The browser default range control is a light-mode object with a chrome thumb
+ * and it looks like a mistake on this ground. Restyled rather than replaced by
+ * a div: a real <input type="range"> is keyboard-operable with arrows, exposes
+ * its value to assistive technology, and supports press-and-hold on touch --
+ * all of which a custom control would have to reimplement badly.
+ */
+.civic-range {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 18px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.civic-range::-webkit-slider-runnable-track {
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-ink-600);
+}
+
+.civic-range::-moz-range-track {
+    height: 2px;
+    border-radius: 2px;
+    background: var(--color-ink-600);
+}
+
+.civic-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: 2px solid var(--color-ink-950);
+    transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.civic-range::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--color-ink-950);
+    background: var(--color-accent);
+}
+
+.civic-range:active::-webkit-slider-thumb {
+    transform: scale(1.25);
+}
+
+/**
+ * Motion primitives.
+ *
+ * Two keyframes shared by everything in components/ui/motion. Declared here
+ * rather than inline so the reduced-motion block at the bottom of this file
+ * catches them: that rule collapses every animation on the page to a single
+ * frame, which is the only way to be sure a component added later cannot
+ * introduce movement someone has asked not to see.
+ */
+
+/* Border beam: a conic gradient rotating behind a masked rim. */
+@keyframes civic-spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Marquee: exactly -50%, so the duplicated copy lands where the first began. */
+@keyframes civic-marquee {
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+.civic-marquee {
+    /* Fades both ends rather than letting items collide with the page edge. */
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+/**
+ * Word-by-word reveal.
+ *
+ * The rest state lives here rather than inline so that a reveal which never
+ * receives its data-play -- JavaScript disabled, observer never fired -- is
+ * still readable: `@media (scripting: none)` puts it straight into the played
+ * state. Text that is invisible without JS is not an animation, it is a bug.
+ */
+.civic-blur-in > span > span {
+    transform: translateY(0.42em);
+    filter: blur(7px);
+    opacity: 0;
+    transition:
+        transform 620ms cubic-bezier(0.16, 1, 0.3, 1) var(--civic-delay, 0ms),
+        opacity 520ms ease var(--civic-delay, 0ms),
+        filter 620ms ease var(--civic-delay, 0ms);
+    will-change: transform, filter, opacity;
+}
+
+.civic-blur-in[data-play="true"] > span > span {
+    transform: none;
+    filter: none;
+    opacity: 1;
+    will-change: auto;
+}
+
+.civic-draw-rule > div {
+    transform: scaleX(0);
+    transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1) var(--civic-delay, 0ms);
+}
+
+.civic-draw-rule[data-play="true"] > div {
+    transform: scaleX(1);
+}
+
+/**
+ * A photograph cross-fading over its own placeholder.
+ *
+ * Driven by a data attribute rather than React state, because the load can
+ * complete before hydration and because a page of photographs should not cost
+ * a render each. Visible by default under `scripting: none` for the same reason
+ * the reveals are: an image that needs JavaScript to become visible is a bug.
+ */
+.civic-photo {
+    opacity: 0;
+}
+
+.civic-photo[data-loaded="true"] {
+    opacity: 1;
+}
+
+@media (scripting: none) {
+    .civic-photo {
+        opacity: 1;
+    }
+
+    .civic-blur-in > span > span {
+        transform: none;
+        filter: none;
+        opacity: 1;
+    }
+
+    .civic-draw-rule > div {
+        transform: scaleX(1);
+    }
+}
+
+/**
+ * Reduced motion, again, and harder.
+ *
+ * The blanket rule above shortens animations to a hundredth of a millisecond,
+ * which stops the movement but leaves an infinitely-repeating animation
+ * repainting forever. For the two looping decorations that is worth switching
+ * off outright -- and the marquee, which is a moving strip of links, has to
+ * become something a reader can actually reach, so it turns into a plain
+ * scrollable row.
+ */
+@media (prefers-reduced-motion: reduce) {
+    .civic-marquee * {
+        animation: none !important;
+    }
+
+    .civic-marquee {
+        overflow-x: auto;
+        mask-image: none;
+    }
+
+    /* The duplicated copy is only there to make the loop seamless. */
+    .civic-marquee > [aria-hidden="true"] {
+        display: none;
+    }
 }

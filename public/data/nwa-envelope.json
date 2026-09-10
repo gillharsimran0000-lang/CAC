@@ -1,0 +1,33 @@
+{
+  "areaId": "nwa",
+  "sampleCount": 121,
+  "deterrenceS": 692,
+  "calibratedMeanTripMin": 22,
+  "axes": {
+    "transportation": {
+      "min": 1326.0143594291746,
+      "max": 1695.9240150504784,
+      "higherIsBetter": false
+    },
+    "emergencyAccess": {
+      "min": 0.5867398956068353,
+      "max": 0.6796821717427416,
+      "higherIsBetter": true
+    },
+    "infrastructureCapacity": {
+      "min": 0.17687650570859964,
+      "max": 0.19746900042176307,
+      "higherIsBetter": true
+    },
+    "growthEfficiency": {
+      "min": 22.604089458817896,
+      "max": 177.87307712195738,
+      "higherIsBetter": true
+    },
+    "infrastructureBurden": {
+      "min": 16632.39788413624,
+      "max": 145768.25704238782,
+      "higherIsBetter": false
+    }
+  }
+}
