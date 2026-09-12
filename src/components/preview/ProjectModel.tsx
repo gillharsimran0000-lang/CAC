@@ -1,7 +1,12 @@
 "use client"
 
 /**
- * WHAT YOU ARE ABOUT TO BUILD.
+ * WHAT YOU ARE ABOUT TO BUILD, WITHOUT WEBGL.
+ *
+ * This is now the fallback. The lab draws its preview with BlueprintView, in
+ * three.js, and hands over to this painted renderer only when the browser
+ * cannot create a WebGL context. Everything below still describes what this
+ * component does; it is simply no longer what most people see first.
  *
  * The lab used to show one animation for every change: the extruded congestion
  * field, which is a picture of a RESULT and therefore cannot exist before a run.

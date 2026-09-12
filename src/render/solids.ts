@@ -42,6 +42,8 @@ export interface Solid {
     flat?: boolean
     /** Face opacity, before the build fade. Defaults to 0.16. */
     opacity?: number
+    /** Site or change. See Layer. Defaults to "change". */
+    layer?: Layer
 }
 
 /** A polyline in three dimensions: a road centreline, a rail, a cable, a mast. */
@@ -57,11 +59,54 @@ export interface Strand {
     /** Stroke opacity, before the build fade. Defaults to 0.9. */
     opacity?: number
     dashed?: boolean
+    /** Site or change. See Layer. Defaults to "change". */
+    layer?: Layer
 }
+
+/**
+ * WHICH LAYER A PIECE BELONGS TO.
+ *
+ * The 2D renderer never needed this: it drew everything in one pass and used
+ * opacity to say what was context. The blueprint view does need it, because
+ * the whole point of that view is a sequence -- here is the site, here is what
+ * you are proposing on it, here it is built -- and a sequence requires knowing
+ * which geometry is the site and which is the proposal.
+ *
+ * Defaults to "change", so a scene that never thought about layers still draws
+ * its subject at full strength.
+ */
+export type Layer = "site" | "change"
+
+/**
+ * How a change reaches the model, drawn as motion.
+ *
+ * Each of these is a MECHANISM, never a result. A response band sweeping out
+ * from a new station is geometry -- the station is there, the standard is 240
+ * seconds -- and says nothing about how many people end up inside it. Trips
+ * leaving a new block are what the engine does with residents, not what it
+ * concluded. The moment one of these encoded an outcome it would be a
+ * prediction rendered before the simulation ran, which is the one thing this
+ * whole application refuses to do.
+ */
+export type Mechanism =
+    /** Trips generated here, leaving toward the rest of the network. */
+    | { kind: "trips"; from: Point[]; heading: number }
+    /** Flow along a corridor, faster or slower with its capacity. */
+    | { kind: "flow"; along: Point[]; lanes: number; z?: number }
+    /** A first-response band reaching outward from a station. */
+    | { kind: "band"; at: Point; radius: number }
+    /** Capacity filling: the basins of a treatment works coming up to level. */
+    | { kind: "fill"; basins: { at: Point; radius: number; z: number }[] }
 
 export interface Scene {
     solids: Solid[]
     strands: Strand[]
+    /**
+     * What the change does, once it is built, animated in the last phase of
+     * the blueprint. Optional: the twenty catalogue projects mostly describe
+     * objects rather than mechanisms.
+     */
+    mechanism?: Mechanism
     /** Half-width of the scene in metres, used to frame the camera. */
     extent: number
     /** Ground plane tint, drawn as a disc under everything. */

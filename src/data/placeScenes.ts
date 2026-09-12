@@ -27,7 +27,7 @@
  */
 
 import { AxisKey } from "@/engine/types"
-import { Scene, Solid, Strand, arc, circle, flatten, repeat, rotRect, rect, strip } from "@/render/solids"
+import { Mechanism, Scene, Solid, Strand, arc, circle, flatten, repeat, rotRect, rect, strip } from "@/render/solids"
 import { C, block, circleLine, faint, hash, line, plate, seeded, tree } from "@/render/kit"
 import { PlaceProfile, Region, householdSize } from "./place"
 
@@ -58,6 +58,20 @@ interface Layer {
 }
 
 const EMPTY: Layer = { solids: [], strands: [] }
+
+/**
+ * Marks a whole layer as the site rather than the proposal.
+ *
+ * The blueprint view plays the site in first and then draws the change over it,
+ * which needs to know which is which. Applied here, once, rather than on every
+ * primitive in the landscape and settlement builders: those two functions ARE
+ * the site by definition, and tagging at the call site means a new landform
+ * cannot forget.
+ */
+const asSite = (l: Layer): Layer => ({
+    solids: l.solids.map((s) => ({ ...s, layer: "site" as const })),
+    strands: l.strands.map((st) => ({ ...st, layer: "site" as const })),
+})
 const merge = (...ls: Layer[]): Layer => ({
     solids: ls.flatMap((l) => l.solids),
     strands: ls.flatMap((l) => l.strands),
@@ -606,7 +620,7 @@ export function placeScene(kind: LeverKind, p: PlaceProfile): Scene {
        one thing being changed. */
     const built = alongRoad ? EMPTY : settlement(p, rnd)
     const change = changeLayer(kind, p, rnd)
-    const all = merge(ground, built, change)
+    const all = merge(asSite(ground), asSite(built), change)
 
     const zScale =
         p.form === "core" ? 1.6 : p.form === "town" ? 2.2 : p.form === "suburban" ? 3 : 3.6
@@ -617,6 +631,68 @@ export function placeScene(kind: LeverKind, p: PlaceProfile): Scene {
         zScale: alongRoad ? 4 : zScale,
         solids: all.solids,
         strands: all.strands,
+        mechanism: mechanismFor(kind, p, rnd),
+    }
+}
+
+/**
+ * WHAT THE LEVER DOES, ONCE IT IS BUILT.
+ *
+ * The fourth act of the blueprint. Every one of these is geometry and a stated
+ * standard, never an outcome: a response band is 240 seconds of NFPA 1710
+ * turned into distance at a plausible speed, trips are the journeys the engine
+ * generates per resident leaving the dwellings that generated them, flow is
+ * vehicles on the lanes the scenario asked for.
+ *
+ * None of it says how far an axis moves. That is the difference between showing
+ * someone the mechanism and showing them a result they have not run yet, and
+ * the label under the panel repeats it in words.
+ */
+function mechanismFor(kind: LeverKind, p: PlaceProfile, rnd: () => number): Mechanism | undefined {
+    switch (kind) {
+        case "residents":
+        case "decline":
+        case "jobs": {
+            /* Journeys leaving the new dwellings. Heading is seeded on the zone
+               so a place keeps the same one every visit, and it is arbitrary by
+               construction: trip DISTRIBUTION is the engine's business and this
+               panel has not run it. */
+            const sites = developmentSites(p, rnd, Math.min(9, newBuildings(p)))
+            return {
+                kind: "trips",
+                from: sites.map(([x, y]) => [x, y] as [number, number]),
+                heading: kind === "decline" ? Math.PI * 1.15 : Math.PI * 0.18,
+            }
+        }
+        case "corridor":
+        case "diet":
+        case "speed": {
+            const centre = repeat(25, (i) => [-780 + i * 65, Math.sin(i / 7) * 26] as [number, number])
+            return {
+                kind: "flow",
+                along: centre,
+                // A diet runs what it has left; the others run what they gain.
+                lanes: kind === "diet" ? 2 : kind === "corridor" ? 4 : 3,
+                z: 0.5,
+            }
+        }
+        case "fire":
+        case "ems":
+        case "closure":
+            /* 240 seconds of NFPA 1710 at roughly 50 km/h of congested urban
+               travel is about three and a half kilometres, which is more than
+               this frame holds, so the band is drawn to the edge of the site.
+               It is the reaching that is the mechanism. */
+            return { kind: "band", at: [0, 0], radius: EXTENT * 0.92 }
+        case "utility":
+            return {
+                kind: "fill",
+                basins: repeat(3, (i) => ({
+                    at: [-170 + i * 175, 40] as [number, number],
+                    radius: 62,
+                    z: 2,
+                })),
+            }
     }
 }
 

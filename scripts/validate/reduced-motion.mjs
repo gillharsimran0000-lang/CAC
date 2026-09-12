@@ -19,7 +19,8 @@ async function check(reduce) {
     { name: "prefers-reduced-motion", value: reduce ? "reduce" : "no-preference" },
   ])
   p.on("pageerror", (e) => fails.push(`page error (reduce=${reduce}): ${e.message.slice(0, 140)}`))
-  await p.goto("http://localhost:3000/", { waitUntil: "domcontentloaded" })
+  // Honours BASE like every other check; this one had the port hardcoded.
+  await p.goto(`${process.env.BASE ?? "http://localhost:3000"}/`, { waitUntil: "domcontentloaded" })
   await p.waitForSelector("canvas")
   await new Promise((r) => setTimeout(r, 2500))
 

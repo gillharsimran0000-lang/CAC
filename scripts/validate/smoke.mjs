@@ -15,7 +15,19 @@ const problems = []
 const note = (s) => console.log(`  ${s}`)
 
 async function main() {
-    const browser = await puppeteer.launch({ headless: true, args: ["--no-sandbox"] })
+    const browser = await puppeteer.launch({
+    headless: true,
+    /* SwiftShader, so the preview's WebGL path is the one under test.
+       Without these flags headless Chrome has no GPU, the blueprint falls back
+       to the painted renderer, and this suite would be quietly checking the
+       thing users do not see. */
+    args: [
+        "--no-sandbox",
+        "--use-gl=angle",
+        "--use-angle=swiftshader",
+        "--enable-unsafe-swiftshader",
+    ],
+})
     const page = await browser.newPage()
     await page.setCacheEnabled(false)
     await page.setViewport({ width: 1440, height: 900 })
@@ -123,22 +135,52 @@ async function main() {
         const row = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("Bypass"))
         row?.click()
     })
-    await new Promise((r) => setTimeout(r, 3200))
+    await new Promise((r) => setTimeout(r, 1200))
+    /* Jump to the BUILT act before reading. The blueprint plays over seven
+       seconds and its early acts are thin drafting lines, so a read taken a
+       few seconds in finds a few hundred lit pixels in a panel that is
+       working perfectly. Seeking to the act is deterministic, and it proves
+       the act navigation works while it is at it. */
+    await page.evaluate(() => {
+        const btn = [...document.querySelectorAll("button")].find((b) => b.textContent?.trim() === "Built")
+        btn?.click()
+    })
+    await new Promise((r) => setTimeout(r, 1500))
     const preview = await page.evaluate(() => {
         const ok = document.body.innerText.includes("THE PROJECT")
-        // The preview's own canvas, not the map's: the map is far larger and
-        // would pass this check on its own, which would make the assertion
-        // about the preview meaningless.
-        const c = document.querySelector("canvas[data-preview-model]")
-        if (!c?.width) return { ok, lit: 0 }
-        const { data } = c.getContext("2d").getImageData(0, 0, c.width, c.height)
+        /* The preview's own canvas, not the map's: the map is far larger and
+           would pass this check on its own, which would make the assertion
+           about the preview meaningless.
+           
+           It is a WebGL canvas now, so it is found by asking which context it
+           has rather than by a data attribute, and it is read back with
+           readPixels rather than getImageData. That read only sees anything
+           because the renderer sets preserveDrawingBuffer; without it the
+           buffer is cleared on present and every pixel reads as zero. */
+        const c = [...document.querySelectorAll("canvas")].find(
+            (x) => x.getContext("webgl2") || x.getContext("webgl"),
+        )
+        if (!c?.width) return { ok, lit: 0, total: 0, cssH: 0 }
+        const gl = c.getContext("webgl2") || c.getContext("webgl")
+        const px = new Uint8Array(c.width * c.height * 4)
+        gl.readPixels(0, 0, c.width, c.height, gl.RGBA, gl.UNSIGNED_BYTE, px)
         let lit = 0
-        for (let i = 3; i < data.length; i += 4) if (data[i] > 12) lit++
-        return { ok, lit }
+        for (let i = 3; i < px.length; i += 4) if (px[i] > 12) lit++
+        return { ok, lit, total: c.width * c.height, cssH: Math.round(c.getBoundingClientRect().height) }
     })
-    note(`project preview drawn: ${preview.ok}, ${preview.lit} lit pixels in the model canvas`)
+    const frac = preview.total ? preview.lit / preview.total : 0
+    note(
+        `project preview drawn: ${preview.ok}, ${preview.lit} of ${preview.total} pixels lit ` +
+            `(${(frac * 100).toFixed(1)}%), canvas ${preview.cssH}px tall`,
+    )
     if (!preview.ok) problems.push("picking a project did not open the preview panel")
-    if (preview.lit < 2000) problems.push(`preview model looks blank (${preview.lit} lit pixels)`)
+    /* A fraction rather than a count. The canvas is sized by the viewport,
+       so an absolute threshold passed or failed on window width, and the old
+       figure of 2,000 was calibrated for a canvas several times this size. */
+    if (frac < 0.02) problems.push(`preview model looks blank (${(frac * 100).toFixed(1)}% lit)`)
+    /* And a floor on height, because the failure that actually happened was
+       not a blank model but a legible one squeezed to 101 pixels. */
+    if (preview.cssH < 150) problems.push(`preview canvas is a sliver (${preview.cssH}px tall)`)
 
     const history = await page.evaluate(() => document.body.innerText.includes("DECISION HISTORY"))
     note(`decision history present: ${history}`)

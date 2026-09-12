@@ -24,7 +24,7 @@ import type { AxisTouch } from "@/data/projects"
 import type { Axis, AxisKey } from "@/engine/types"
 import { photo as findPhoto } from "@/data/photos"
 import { Photograph } from "@/components/ui/motion"
-import { ProjectModel } from "./ProjectModel"
+import { BlueprintView } from "./BlueprintView"
 import { PreviewDna } from "./PreviewDna"
 
 /**
@@ -134,7 +134,7 @@ export function ProjectPreview({
                         generated geometry, not a photograph
                     </span>
                 </div>
-                <ProjectModel scene={spec.scene} sceneKey={spec.key} className="mt-2 min-h-0 flex-1" />
+                <BlueprintView scene={spec.scene} sceneKey={spec.key} className="mt-2 min-h-0 flex-1" />
                 <ul className="mt-2.5 space-y-1">
                     {spec.effectLines.map((l) => (
                         <li key={l.text} className="flex gap-2 font-mono text-[10px] text-paper-300">
@@ -155,7 +155,14 @@ export function ProjectPreview({
                     ))}
                 </ul>
                 {spec.notModelled && (
-                    <p className="mt-2 border-l-2 border-demo/50 pl-2 text-[10px] leading-relaxed text-paper-400">
+                    /* Clamped to three lines, with the whole sentence on hover.
+                       Some catalogue entries run to five lines, and every line
+                       here comes straight out of the height of the blueprint
+                       above it. */
+                    <p
+                        title={spec.notModelled}
+                        className="mt-2 line-clamp-3 border-l-2 border-demo/50 pl-2 text-[10px] leading-relaxed text-paper-400"
+                    >
                         <span className="font-mono uppercase tracking-wider text-demo">
                             not modelled
                         </span>{" "}

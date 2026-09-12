@@ -43,6 +43,16 @@ mostly aviation; this model has no aviation layer). Picking one draws it before
 you run anything, and marks the axes its mechanism can reach without predicting
 how far any of them will move. See `src/data/projects.ts`.
 
+**The blueprint**: whatever is picked, catalogue project or hand-built change,
+is drawn in three.js and played as four acts: the site as it stands, the
+proposal drafted over it, the proposal built, and the mechanism by which it
+reaches the model (trips leaving, flow running, a response band reaching,
+basins filling). The last act animates a mechanism and never a result, and says
+so. anime.js drives the act timeline, so it can be scrubbed, replayed or jumped
+to, and the panel expands to full screen. Without WebGL it falls back to the
+painted renderer. See `src/components/preview/BlueprintView.tsx` and
+`src/render/three/blueprint.ts`.
+
 **Decision History**: every run is kept with its result and can be restored.
 Deliberately not an undo stack: undo discards the path not taken, and the path
 not taken is the experiment. Restoring branches rather than overwrites.

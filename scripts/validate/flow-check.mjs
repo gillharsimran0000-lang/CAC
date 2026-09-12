@@ -8,6 +8,13 @@ const BASE = process.env.BASE ?? "http://localhost:3000"
 const fails = []
 const ok = (l, pass, d = "") => { console.log(`  ${pass ? "PASS" : "FAIL"}  ${l}${d ? `  · ${d}` : ""}`); if (!pass) fails.push(l) }
 
+/* No software GPU here, deliberately. This check drives the result page, whose
+   scroll scrub needs a real frame rate: under SwiftShader it ran at about two
+   frames a second and the GSAP-driven card had not caught up within the wait,
+   so a working reveal reported as stuck (506px -> 690px at 900ms, 506px ->
+   1337px at 3000ms, 506px -> 1343px at 900ms with no flags). smoke.mjs runs
+   with SwiftShader and owns the WebGL blueprint; this one tests whichever
+   renderer the browser actually gets, which covers the no-WebGL fallback too. */
 const b = await puppeteer.launch({ headless: true, args: ["--no-sandbox"] })
 const p = await b.newPage()
 await p.setCacheEnabled(false)
@@ -50,26 +57,66 @@ const narrowed = await search("bypass")
 ok("typing narrows the project list", narrowed > 0 && narrowed < all, `${all} → ${narrowed} for "bypass"`)
 
 await clickText("Bypass")
-await new Promise(r => setTimeout(r, 2600))
+await new Promise(r => setTimeout(r, 1200))
+/* Seek to the BUILT act before reading pixels: the early acts are drafting
+   lines and a timed read lands mid-drawing. Also exercises act navigation. */
+await clickText("Built", true)
+await new Promise(r => setTimeout(r, 1500))
 
 /* The preview is the point of picking: a specific object, drawn, with the
    axes it can reach marked beside it. */
 const preview = await p.evaluate(() => {
-  const c = document.querySelector("canvas[data-preview-model]")
+  /* Whichever renderer the browser got. With WebGL the blueprint draws into a
+     WebGL canvas, read back with readPixels -- possible only because the
+     renderer sets preserveDrawingBuffer. Without WebGL, BlueprintView hands
+     over to the painted ProjectModel, whose canvas carries data-preview-model
+     and is read with getImageData. Both are outcomes a real user can get. */
+  const webgl = [...document.querySelectorAll("canvas")].find(
+    (x) => x.getContext("webgl2") || x.getContext("webgl"),
+  )
+  const painted = document.querySelector("canvas[data-preview-model]")
+  const c = webgl ?? painted
   let lit = 0
-  if (c?.width) {
-    const { data } = c.getContext("2d").getImageData(0, 0, c.width, c.height)
+  const total = c?.width ? c.width * c.height : 0
+  const cssH = c ? Math.round(c.getBoundingClientRect().height) : 0
+  if (webgl?.width) {
+    const gl = webgl.getContext("webgl2") || webgl.getContext("webgl")
+    const px = new Uint8Array(webgl.width * webgl.height * 4)
+    gl.readPixels(0, 0, webgl.width, webgl.height, gl.RGBA, gl.UNSIGNED_BYTE, px)
+    for (let i = 3; i < px.length; i += 4) if (px[i] > 12) lit++
+  } else if (painted?.width) {
+    const { data } = painted.getContext("2d").getImageData(0, 0, painted.width, painted.height)
     for (let i = 3; i < data.length; i += 4) if (data[i] > 12) lit++
   }
   return {
+    mode: webgl ? "webgl" : painted ? "painted" : "none",
     lit,
+    total,
+    cssH,
     panel: document.body.innerText.includes("THE PROJECT"),
     // The label is uppercased by CSS, and innerText reflects that.
     limits: /not modelled/i.test(document.body.innerText),
     reaches: document.body.innerText.includes("WHAT IT REACHES"),
+    acts: ["Site", "Blueprint", "Built", "Mechanism"].every((n) =>
+      [...document.querySelectorAll("button")].some((b) => b.textContent?.trim() === n),
+    ),
   }
 })
-ok("picking a project draws its own model", preview.lit > 2000, `${preview.lit} lit pixels`)
+// A fraction, because the canvas is sized by the viewport; see smoke.mjs.
+const litFrac = preview.total ? preview.lit / preview.total : 0
+ok(
+  "picking a project draws its own model",
+  litFrac > 0.02,
+  `${preview.mode}: ${(litFrac * 100).toFixed(1)}% of ${preview.total} pixels lit`,
+)
+ok("the preview gets room to be seen", preview.cssH >= 150, `${preview.cssH}px tall`)
+if (preview.mode === "webgl") {
+  // The four acts are the feature; their absence is a broken panel.
+  ok("the blueprint runs in four acts", preview.acts)
+} else {
+  // The fallback has no acts by design. What matters is that it drew.
+  ok("without WebGL the preview falls back to the painted model", preview.mode === "painted")
+}
 ok("preview states what the model cannot see", preview.panel && preview.limits, JSON.stringify(preview))
 ok("preview marks the axes the change can reach", preview.reaches)
 

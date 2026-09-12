@@ -247,7 +247,11 @@ export default function LabPage() {
                             onSelectZone={setZoneGeoid}
                         />
                     </div>
-                    <div className="h-[330px] shrink-0">
+                    {/* 410 rather than 330. The blueprint grew act buttons, a
+                        scrubber and a caption, and at the old height they left the
+                        3D view 101 pixels tall: a sliver that technically rendered
+                        and could not be read. */}
+                    <div className="h-[410px] shrink-0">
                         <ProjectPreview
                             spec={preview}
                             axes={result?.axes ?? area?.baseline.axes ?? null}
